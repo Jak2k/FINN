@@ -1,0 +1,86 @@
+@import url('https://fonts.googleapis.com/css?family=K2D:700|Poppins:400|Fira%20Code:400|Average%20Sans:400');
+@import url('https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/dark.min.css');
+
+:root {
+    --font-size: 4rem;
+    --bg: hsl(90, 10%, 4%);
+    --text: hsl(108, 32%, 96%);
+    --accent: hsl(108, 16%, 58%);
+}
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: 'Average Sans', sans-serif;
+    line-height: 1.15;
+    background-color: var(--bg);
+    color: var(--text);
+    padding: 4rem;
+
+    font-size: var(--font-size);
+
+    overflow: hidden;
+    height: 1080px;
+    width: 1920px;
+}
+
+h1 {
+    font-size: calc(var(--font-size) * 2);
+    margin-bottom: 0.5em;
+    text-align: center;
+}
+
+h2 {
+    font-size: calc(var(--font-size) * 1.5);
+    margin-bottom: 0.25em;
+}
+
+h3 {
+    font-size: calc(var(--font-size) * 1.17);
+    margin-bottom: 0.25em;
+}
+
+h4 {
+    font-size: var(--font-size);
+    margin-bottom: 0.25em;
+}
+
+
+h1,
+h2,
+h3,
+h4,
+h5 {
+    font-family: 'K2D';
+    font-weight: 700;
+}
+
+ul {
+    padding: 0;
+    margin: 0;
+    padding-left: 1.25em;
+}
+
+strong {
+    color: var(--accent);
+}
+
+code,
+pre {
+    font-family: 'Fire Code', monospace;
+    font-size: 0.8em;
+    padding: 0em !important;
+    margin: 0em !important;
+
+    background-color: var(--bg);
+}
+
+pre * {
+    font-family: 'Fire Code', monospace;
+    font-size: inherit;
+    background-color: var(--bg) !important;
+}
