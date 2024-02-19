@@ -2,6 +2,8 @@
 
 *AutoVID* is a tool for automatic **video** generation **from `markdown`** files.
 
+- [Hello World! - YouTube](https://youtu.be/5B-SlP28P64)
+
 ## Features
 
 - Images from markdown files
@@ -12,4 +14,4 @@
 
 ### Commands
 
-- to run voice.py: `PYTORCH_CUDA_ALLOC_CONF=expandable_segments:True python3.11 voice.py`
+- To render video: `PYTORCH_CUDA_ALLOC_CONF=expandable_segments:True pnpm start render`
