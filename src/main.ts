@@ -4,39 +4,40 @@ import { collect } from './voice_collect';
 import fs from 'fs';
 import { exec } from 'child_process';
 import util from 'util';
+import * as readline from 'readline';
 
-async function renderImage(file: string) {
-    const inputPath = `vid/${file}`;
-    const outputPath = `vid/.build/image_artifacts/${file.replace('.md', '.png')}`;
+async function renderImage(file: string, base: string) {
+    const inputPath = `${base}/${file}`;
+    const outputPath = `${base}/.build/image_artifacts/${file.replace('.md', '.png')}`;
     await markdownToPNG(inputPath, outputPath);
 
     console.log(`Rendered ${inputPath} to ${outputPath}`);
 }
 
-async function renderImages(files: string[]) {
+async function renderImages(files: string[], base: string) {
     // make sure the output directory exists
-    if (!fs.existsSync('vid/.build/image_artifacts')) {
-        fs.mkdirSync('vid/.build/image_artifacts', { recursive: true });
+    if (!fs.existsSync(`${base}/.build/image_artifacts`)) {
+        fs.mkdirSync(`${base}/.build/image_artifacts`, { recursive: true });
     }
 
     for (const file of files) {
-        await renderImage(file);
+        await renderImage(file, base);
     }
 
     console.log('Rendered all files');
 }
 
-async function generateAudio(file: string) {
+async function generateAudio(file: string, base: string) {
     {
-        const inputPath = `vid/${file}`;
-        const outputPath = `vid/.build/voice_artifacts/${file.replace('.md', '.txt')}`;
+        const inputPath = `${base}/${file}`;
+        const outputPath = `${base}/.build/voice_artifacts/${file.replace('.md', '.txt')}`;
         const voiceText = await collect(inputPath);
 
         fs.writeFileSync(outputPath, voiceText);
     }
 
     {
-        const inputPath = `vid/.build/voice_artifacts/${file.replace('.md', '.txt')}`;
+        const inputPath = `${base}/.build/voice_artifacts/${file.replace('.md', '.txt')}`;
 
         // the command is `python3.11 voice.py <inputPath>
         const execPromise = util.promisify(exec);
@@ -53,27 +54,27 @@ async function generateAudio(file: string) {
     }
 }
 
-async function generateAudios(files: string[]) {
+async function generateAudios(files: string[], base: string) {
     // make sure the output directory exists
-    if (!fs.existsSync('vid/.build/voice_artifacts')) {
-        fs.mkdirSync('vid/.build/voice_artifacts', { recursive: true });
+    if (!fs.existsSync(`${base}/.build/voice_artifacts`)) {
+        fs.mkdirSync(`${base}/.build/voice_artifacts`, { recursive: true });
     }
 
     // make sure the output directory exists
-    if (!fs.existsSync('vid/.build/audio_artifacts')) {
-        fs.mkdirSync('vid/.build/audio_artifacts', { recursive: true });
+    if (!fs.existsSync(`${base}/.build/audio_artifacts`)) {
+        fs.mkdirSync(`${base}/.build/audio_artifacts`, { recursive: true });
     }
 
     // convert all the voice lines to audio
     for (const file of files) {
-        await generateAudio(file);
+        await generateAudio(file, base);
     }
 }
 
-async function mergeArtifact(file: string) {
-    const imagePath = `vid/.build/image_artifacts/${file.replace('.md', '.png')}`;
-    const audioPath = `vid/.build/audio_artifacts/${file.replace('.md', '.wav')}`;
-    const outputPath = `vid/.build/video_artifacts/${file.replace('.md', '.mp4')}`;
+async function mergeArtifact(file: string, base: string) {
+    const imagePath = `${base}/.build/image_artifacts/${file.replace('.md', '.png')}`;
+    const audioPath = `${base}/.build/audio_artifacts/${file.replace('.md', '.wav')}`;
+    const outputPath = `${base}/.build/video_artifacts/${file.replace('.md', '.mp4')}`;
 
     const execPromise = util.promisify(exec);
 
@@ -89,38 +90,38 @@ async function mergeArtifact(file: string) {
     console.log(`Merged ${imagePath} and ${audioPath} to ${outputPath}`);
 }
 
-async function mergeArtifacts(files: string[]) {
+async function mergeArtifacts(files: string[], base: string) {
     // make sure the output directory exists
-    if (!fs.existsSync('vid/.build/video_artifacts')) {
-        fs.mkdirSync('vid/.build/video_artifacts', { recursive: true });
+    if (!fs.existsSync(`${base}/.build/video_artifacts`)) {
+        fs.mkdirSync(`${base}/.build/video_artifacts`, { recursive: true });
     }
 
     // merge the audios and images to videos
     for (const file of files) {
-        await mergeArtifact(file);
+        await mergeArtifact(file, base);
     }
 
     console.log('Merged all videos');
 }
 
-async function concatenateVideos(files: string[]) {
+async function concatenateVideos(files: string[], base: string) {
     // make sure the output directory exists
-    if (!fs.existsSync('vid/.build')) {
-        fs.mkdirSync('vid/.build', { recursive: true });
+    if (!fs.existsSync(`${base}/.build`)) {
+        fs.mkdirSync(`${base}/.build`, { recursive: true });
     }
 
     // write a file that contains the list of all the videos
     const videoList = files.map(file => `file video_artifacts/${file.replace('.md', '.mp4')}`).join('\n');
-    fs.writeFileSync('vid/.build/videos.txt', videoList);
+    fs.writeFileSync(`${base}/.build/videos.txt`, videoList);
 
     // concatenate all the videos together
     const execPromise = util.promisify(exec);
-    await execPromise(`ffmpeg -f concat -safe 0 -i vid/.build/videos.txt -c copy vid//output.mp4 -y`);
+    await execPromise(`ffmpeg -f concat -safe 0 -i ${base}/.build/videos.txt -c copy ${base}/output.mp4 -y`);
 
     console.log('Concatenated all videos');
 }
 
-async function regenerateChapter(file_num: string, files: string[]) {
+async function regenerateChapter(file_num: string, files: string[], base: string) {
     // find the file in files that starts with file_num
     const file = files.find(f => f.startsWith(file_num));
 
@@ -128,43 +129,78 @@ async function regenerateChapter(file_num: string, files: string[]) {
         throw new Error(`File not found: ${file_num}. Please enter a two digit number.`);
     }
 
-    await renderImage(file);
-    await generateAudio(file);
-    await mergeArtifact(file);
+    await renderImage(file, base);
+    await generateAudio(file, base);
+    await mergeArtifact(file, base);
 
     console.log(`Regenerated chapter ${file_num}`);
 }
 
-async function generateVideo(files: string[]) {
-    await renderImages(files);
-    await generateAudios(files);
-    await mergeArtifacts(files);
-    await concatenateVideos(files);
+async function generateVideo(files: string[], base: string) {
+    await renderImages(files, base);
+    await generateAudios(files, base);
+    await mergeArtifacts(files, base);
+    await concatenateVideos(files, base);
 
     console.log('Generated video');
 }
 
+async function readLineFromStdin(question: string): Promise<string> {
+    const rl = readline.createInterface({
+        input: process.stdin,
+        output: process.stdout
+    });
+
+    return new Promise((resolve) => {
+        rl.question(`${question}>`, (answer) => {
+            rl.close();
+            resolve(answer);
+        });
+    });
+}
+
 async function main() {
-    const files = await getSortedFiles('vid');
 
-    // first cmd arg is the subcommand
-    const subcommand = process.argv.length > 2 ? process.argv[2] : '';
+    // first cmd arg is the video name
+    const videoName = process.argv.length > 2 ? process.argv[2] : '';
 
-    if (subcommand === 'render') {
-        await generateVideo(files);
-    } else if (subcommand === 'regen') {
-        const file_num = process.argv.length > 3 ? process.argv[3] : '';
-
-        if (file_num.length !== 2) {
-            throw new Error(`Invalid file number: ${file_num}. Please enter a two digit number.`);
-        }
-
-        await regenerateChapter(file_num, files);
-    } else if (subcommand === 'join') {
-        await concatenateVideos(files);
-    } else {
-        console.error(`Available subcommands: render, regen, join`);
+    if (videoName.length === 0) {
+        throw new Error(`Please enter a video name.`);
     }
+
+    const base = `videos/${videoName}`;
+
+    // check if the base directory exists
+    if (!fs.existsSync(base)) {
+        console.log(`Directory not found: ${base}. Please enter a valid directory.`);
+
+        process.exit(1);
+    }
+
+    while (true) {
+        const subcommand = await readLineFromStdin(`${base}$Enter a command (render, regen, join, exit)`);
+
+        const files = await getSortedFiles(base);
+
+        if (subcommand === 'render') {
+            await generateVideo(files, base);
+        } else if (subcommand === 'regen') {
+            const file_num = process.argv.length > 3 ? process.argv[3] : '';
+
+            if (file_num.length !== 2) {
+                throw new Error(`Invalid file number: ${file_num}. Please enter a two digit number.`);
+            }
+
+            await regenerateChapter(file_num, files, base);
+        } else if (subcommand === 'join') {
+            await concatenateVideos(files, base);
+        } else if (subcommand === 'exit') {
+            process.exit(0);
+        } else {
+            console.error(`Available subcommands: render, regen, join`);
+        }
+    }
+
 }
 
 main().catch(console.error);
