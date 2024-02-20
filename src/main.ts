@@ -152,7 +152,7 @@ async function readLineFromStdin(question: string): Promise<string> {
     });
 
     return new Promise((resolve) => {
-        rl.question(`${question}>`, (answer) => {
+        rl.question(`${question}> `, (answer) => {
             rl.close();
             resolve(answer);
         });
@@ -185,7 +185,7 @@ async function main() {
         if (subcommand === 'render') {
             await generateVideo(files, base);
         } else if (subcommand === 'regen') {
-            const file_num = process.argv.length > 3 ? process.argv[3] : '';
+            const file_num = await readLineFromStdin('Enter a file number');
 
             if (file_num.length !== 2) {
                 throw new Error(`Invalid file number: ${file_num}. Please enter a two digit number.`);
