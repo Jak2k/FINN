@@ -185,13 +185,15 @@ async function main() {
         if (subcommand === 'render') {
             await generateVideo(files, base);
         } else if (subcommand === 'regen') {
-            const file_num = await readLineFromStdin('Enter a file number');
+            const file_nums = await readLineFromStdin('Enter a file number(s)');
 
-            if (file_num.length !== 2) {
-                throw new Error(`Invalid file number: ${file_num}. Please enter a two digit number.`);
+            for (const file_num of file_nums.split(' ')) {
+                if (file_num.length !== 2) {
+                    throw new Error(`Invalid file number: ${file_num}. Please enter a two digit number.`);
+                }
+
+                await regenerateChapter(file_num, files, base);
             }
-
-            await regenerateChapter(file_num, files, base);
         } else if (subcommand === 'join') {
             await concatenateVideos(files, base);
         } else if (subcommand === 'exit') {
