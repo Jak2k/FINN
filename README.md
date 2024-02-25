@@ -3,6 +3,7 @@
 *FINN* is a tool for automatic **video** generation **from `markdown`** files.
 
 - [Hello World! - YouTube](https://youtu.be/5B-SlP28P64)
+- [Install Rust - YouTube](https://youtu.be/y0IkWczJrv4)
 
 ## Features
 
